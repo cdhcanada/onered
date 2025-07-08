@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://red1one.netlify.app/sitemap.xml
+
+# Disallow admin or sensitive areas (if any)
+Disallow: /admin/
+Disallow: /.netlify/
