@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Basic Meta Tags -->
+    <title>Red1One - أفضل منصة للتسوق الإلكتروني من AliExpress و Temu و SHEIN</title>
+    <meta name="description" content="تسوق من أفضل المواقع العالمية AliExpress، Temu، SHEIN بأفضل الأسعار. توصيل مجاني لجميع الولايات الجزائرية. الدفع عند الاستلام." />
+    <meta name="keywords" content="تسوق, علي اكسبريس, تيمو, شين, الجزائر, توصيل مجاني, دفع عند الاستلام, Red1One" />
+    <meta name="author" content="Red1One" />
+    <meta name="robots" content="index, follow" />
+    
+    <!-- Open Graph Meta Tags for Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Red1One - أفضل منصة للتسوق الإلكتروني" />
+    <meta property="og:description" content="تسوق من AliExpress، Temu، SHEIN بأفضل الأسعار. توصيل مجاني لجميع الولايات الجزائرية. الدفع عند الاستلام." />
+    <meta property="og:image" content="/images/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:url" content="https://red1one.netlify.app" />
+    <meta property="og:site_name" content="Red1One" />
+    <meta property="og:locale" content="ar_DZ" />
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Red1One - أفضل منصة للتسوق الإلكتروني" />
+    <meta name="twitter:description" content="تسوق من AliExpress، Temu، SHEIN بأفضل الأسعار. توصيل مجاني لجميع الولايات الجزائرية." />
+    <meta name="twitter:image" content="/images/og-image.jpg" />
+    
+    <!-- Security and Performance -->
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+    
+    <!-- Mobile Optimization -->
+    <meta name="theme-color" content="#dc2626" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Red1One" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
+    
+    <!-- Preconnect for Performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- Structured Data for SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Red1One",
+      "description": "أفضل منصة للتسوق الإلكتروني من AliExpress و Temu و SHEIN",
+      "url": "https://red1one.netlify.app",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://red1one.netlify.app/?search={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+    
+    <!-- تسجيل Service Worker لحل مشكلة التخزين المؤقت -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js')
+            .then(function(registration) {
+              console.log('SW registered: ', registration);
+              // فرض التحديث عند وجود service worker جديد
+              registration.addEventListener('updatefound', function() {
+                const newWorker = registration.installing;
+                newWorker.addEventListener('statechange', function() {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    // إظهار رسالة للمستخدم أن هناك تحديث متاح
+                    if (confirm('يتوفر تحديث جديد للموقع. هل تريد إعادة التحميل؟')) {
+                      window.location.reload();
+                    }
+                  }
+                });
+              });
+            })
+            .catch(function(registrationError) {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
