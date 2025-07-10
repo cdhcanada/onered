@@ -1,12 +1,11 @@
 # Netlify Configuration File
 [build]
   publish = "dist"
-  command = "npm ci && npm run build"
+  command = "npm install && npm run build"
 
 # Node.js version
 [build.environment]
   NODE_VERSION = "18"
-  NPM_VERSION = "9"
 
 # Redirect rules for SPA
 [[redirects]]

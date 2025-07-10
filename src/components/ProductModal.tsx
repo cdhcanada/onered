@@ -33,7 +33,7 @@ const ProductModal: React.FC<ProductModalProps> = memo(({ product, isOpen, onClo
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const target = e.target as HTMLImageElement;
-    target.src = 'https://via.placeholder.com/400x400/374151/ffffff?text=Red1One'; // صورة احتياطية
+    target.src = 'https://via.placeholder.com/400x400/374151/ffffff?text=Red1One';
     setImageLoading(false);
   };
 

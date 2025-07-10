@@ -14,7 +14,6 @@ export default defineConfig({
         manualChunks: {
           vendor: ['react', 'react-dom'],
           icons: ['lucide-react'],
-          utils: ['src/hooks/useGoogleSheets']
         }
       }
     },
@@ -38,7 +37,6 @@ export default defineConfig({
       overlay: false
     }
   },
-  base: './',
   define: {
     __APP_VERSION__: JSON.stringify('1.0.0'),
   },

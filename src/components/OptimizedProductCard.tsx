@@ -72,7 +72,7 @@ const OptimizedProductCard = memo(({
           </div>
         )}
         <img
-          src={imageError ? '/images/placeholder.jpg' : product.image}
+          src={imageError ? 'https://via.placeholder.com/400x400/374151/ffffff?text=Red1One' : product.image}
           alt={product.nameAr}
           className={`w-full h-32 object-contain bg-white ${imageLoaded ? 'block' : 'hidden'}`}
           loading="lazy"
