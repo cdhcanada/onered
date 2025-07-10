@@ -1,4 +1,4 @@
-import React, { memo, useState, useCallback } from 'react';
+import React, { memo, useState, useCallback, useRef, useEffect } from 'react';
 import { Star, ShoppingCart, Store, ExternalLink, Package } from 'lucide-react';
 
 interface OptimizedProductCardProps {
@@ -18,8 +18,32 @@ const OptimizedProductCard = memo(({
 }: OptimizedProductCardProps) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   const isOutOfStock = isLocal && product.quantity === 0;
+
+  // Intersection Observer for lazy loading
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { 
+        threshold: 0.1,
+        rootMargin: '50px'
+      }
+    );
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   const handleImageLoad = useCallback(() => {
     setImageLoaded(true);
@@ -54,99 +78,153 @@ const OptimizedProductCard = memo(({
     ));
   }, []);
 
+  // Create optimized image URL with quality and format parameters
+  const getOptimizedImageUrl = (url: string) => {
+    if (url.includes('via.placeholder.com')) return url;
+    
+    // For external images, add optimization parameters
+    if (url.startsWith('http')) {
+      return `${url}?w=300&h=300&q=75&f=webp`;
+    }
+    
+    return url;
+  };
+
   return (
     <div
+      ref={cardRef}
       onClick={handleClick}
-      className={`bg-gray-900/60 rounded-xl overflow-hidden border transition-transform duration-200 hover:scale-[1.02] cursor-pointer ${
+      className={`group bg-gradient-to-br from-gray-900/80 to-gray-800/60 backdrop-blur-sm rounded-2xl overflow-hidden border transition-all duration-300 cursor-pointer transform hover:scale-[1.02] hover:shadow-2xl ${
         isLocal 
-          ? 'border-green-500/40 hover:border-green-400/60' 
-          : 'border-gray-700/40 hover:border-red-500/40'
+          ? 'border-green-500/30 hover:border-green-400/60 hover:shadow-green-500/20' 
+          : 'border-red-500/30 hover:border-red-500/60 hover:shadow-red-500/20'
       } ${isOutOfStock ? 'opacity-75' : ''}`}
     >
-      <div className="relative">
-        {!imageLoaded && (
-          <div className="w-full h-32 bg-gray-800 flex items-center justify-center">
-            <div className={`animate-spin rounded-full h-4 w-4 border-b-2 ${
-              isLocal ? 'border-green-500' : 'border-red-500'
-            }`}></div>
+      {/* Image Container with Enhanced Loading */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-white to-gray-50">
+        {/* Loading Skeleton */}
+        {!imageLoaded && isVisible && (
+          <div className="w-full h-40 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-pulse">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-shimmer"></div>
           </div>
         )}
-        <img
-          src={imageError ? 'https://via.placeholder.com/400x400/374151/ffffff?text=Red1One' : product.image}
-          alt={product.nameAr}
-          className={`w-full h-32 object-contain bg-white ${imageLoaded ? 'block' : 'hidden'}`}
-          loading="lazy"
-          onLoad={handleImageLoad}
-          onError={handleImageError}
-        />
         
+        {/* Actual Image */}
+        {isVisible && (
+          <img
+            src={imageError ? 'https://via.placeholder.com/400x400/374151/ffffff?text=Red1One' : getOptimizedImageUrl(product.image)}
+            alt={product.nameAr}
+            className={`w-full h-40 object-contain transition-all duration-500 ${
+              imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+            } group-hover:scale-105`}
+            loading="lazy"
+            decoding="async"
+            onLoad={handleImageLoad}
+            onError={handleImageError}
+          />
+        )}
+        
+        {/* Out of Stock Overlay */}
         {isOutOfStock && (
-          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-            <div className="bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center">
+            <div className="bg-red-500/90 text-white px-3 py-1 rounded-full text-xs font-bold animate-pulse">
               نفدت الكمية
             </div>
           </div>
         )}
         
-        <div className={`absolute top-2 left-2 px-2 py-1 rounded-lg text-xs font-bold text-white ${
+        {/* Status Badge */}
+        <div className={`absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-bold text-white backdrop-blur-sm transition-all duration-300 ${
           isLocal 
-            ? 'bg-green-500/90' 
-            : 'bg-red-500/90'
+            ? 'bg-green-500/90 group-hover:bg-green-400/90' 
+            : 'bg-red-500/90 group-hover:bg-red-400/90'
         }`}>
           {isLocal ? (
-            <div className="flex items-center">
-              <Store className="w-3 h-3 ml-1" />
-              متوفر
+            <div className="flex items-center space-x-1">
+              <Store className="w-3 h-3" />
+              <span>متوفر</span>
             </div>
           ) : (
-            'للطلب'
+            <div className="flex items-center space-x-1">
+              <ExternalLink className="w-3 h-3" />
+              <span>للطلب</span>
+            </div>
           )}
         </div>
         
+        {/* Discount Badge */}
         {product.discount && (
-          <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-lg text-xs font-bold">
+          <div className="absolute top-3 right-3 bg-gradient-to-r from-orange-500 to-red-500 text-white px-2 py-1 rounded-full text-xs font-bold animate-bounce">
             -{product.discount}%
           </div>
         )}
+
+        {/* Hover Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
       
-      <div className="p-3">
-        <h3 className="font-bold text-sm mb-1 text-white line-clamp-2">
+      {/* Content */}
+      <div className="p-4 space-y-3">
+        {/* Title */}
+        <h3 className="font-bold text-sm text-white line-clamp-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-300 transition-all duration-300">
           {product.nameAr}
         </h3>
         
-        <div className="flex items-center mb-2">
-          <div className="flex items-center">
+        {/* Rating */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-1">
             {renderStars(product.rating)}
           </div>
-          <span className="text-gray-500 text-xs mr-1">({product.reviews})</span>
+          <span className="text-gray-400 text-xs">({product.reviews})</span>
         </div>
         
-        <div className="mb-3">
-          <div className="flex items-center space-x-1">
-            <span className={`font-bold text-sm ${
+        {/* Price */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-between">
+            <span className={`font-bold text-lg ${
               isLocal ? 'text-green-400' : 'text-red-400'
-            }`}>
+            } group-hover:scale-105 transition-transform duration-300`}>
               {product.priceInDZD.toLocaleString()} دج
             </span>
+            {product.originalPriceInDZD && (
+              <span className="text-gray-500 line-through text-xs">
+                {product.originalPriceInDZD.toLocaleString()} دج
+              </span>
+            )}
           </div>
+          
+          {/* Savings */}
           {product.originalPriceInDZD && (
-            <span className="text-gray-500 line-through text-xs">{product.originalPriceInDZD.toLocaleString()} دج</span>
+            <div className="text-green-400 text-xs font-medium">
+              وفر {((product.originalPriceInDZD - product.priceInDZD) / product.originalPriceInDZD * 100).toFixed(0)}%
+            </div>
           )}
         </div>
         
+        {/* Local Product Info */}
+        {isLocal && (
+          <div className="text-xs text-gray-400 space-y-1">
+            <div className="flex items-center space-x-1">
+              <Package className="w-3 h-3" />
+              <span>الكمية: {product.quantity}</span>
+            </div>
+            <div>{product.deliveryTime}</div>
+          </div>
+        )}
+        
+        {/* Add to Cart Button */}
         <button
           onClick={handleAddToCart}
           disabled={isOutOfStock}
-          className={`w-full py-2 px-3 rounded-lg font-bold transition-colors duration-200 flex items-center justify-center space-x-1 text-xs ${
+          className={`w-full py-3 px-4 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2 text-sm shadow-lg ${
             isOutOfStock
               ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
               : isLocal
-                ? 'bg-green-500 text-white hover:bg-green-600'
-                : 'bg-red-500 text-white hover:bg-red-600'
+                ? 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 hover:shadow-green-500/40'
+                : 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-red-500/40'
           }`}
         >
-          <ShoppingCart className="w-3 h-3 ml-1" />
+          <ShoppingCart className="w-4 h-4" />
           <span>{isOutOfStock ? 'نفدت الكمية' : 'إضافة للسلة'}</span>
         </button>
       </div>
