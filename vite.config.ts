@@ -5,42 +5,47 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   optimizeDeps: {
-    exclude: ['lucide-react'],
+    include: ['react', 'react-dom'],
+    exclude: [],
   },
   build: {
-    // Optimize build for better performance
     rollupOptions: {
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
-          icons: ['lucide-react']
+          icons: ['lucide-react'],
+          utils: ['src/hooks/useGoogleSheets']
         }
       }
     },
-    // Enable compression
     minify: 'terser',
     terserOptions: {
       compress: {
         drop_console: true,
-        drop_debugger: true
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug']
       }
     },
-    // Optimize for production
     target: 'es2015',
     cssCodeSplit: true,
     sourcemap: false,
-    // Increase chunk size warning limit
-    chunkSizeWarningLimit: 1000
+    chunkSizeWarningLimit: 500,
+    assetsInlineLimit: 4096
   },
-  // Enable compression for dev server
   server: {
-    compress: true,
-    host: true
+    host: true,
+    hmr: {
+      overlay: false
+    }
   },
-  // Base URL for deployment
   base: './',
-  // Define environment variables
   define: {
     __APP_VERSION__: JSON.stringify('1.0.0'),
+  },
+  esbuild: {
+    target: 'es2015',
+    minifyIdentifiers: true,
+    minifySyntax: true,
+    minifyWhitespace: true
   }
 });

@@ -1,19 +1,16 @@
-import React, { useState, useRef, lazy, Suspense } from 'react';
+import React, { useState, useRef, lazy, Suspense, useCallback } from 'react';
 import { useEffect } from 'react';
-import Header from './components/Header';
-import FloatingParticles from './components/FloatingParticles';
+import LightweightHeader from './components/LightweightHeader';
 import NavigationTabs from './components/NavigationTabs';
-import HomePage from './components/HomePage';
-import UnifiedProductsPage from './components/UnifiedProductsPage';
+import LightweightHomePage from './components/LightweightHomePage';
+import OptimizedUnifiedProductsPage from './components/OptimizedUnifiedProductsPage';
 import ShoppingCart from './components/ShoppingCart';
 import Notification from './components/Notification';
-import CacheManager from './components/CacheManager';
 import FloatingContactButton from './components/FloatingContactButton';
 import FloatingProductRequestButton from './components/FloatingProductRequestButton';
 import { useGoogleSheets } from './hooks/useGoogleSheets';
 import { Product } from './data/products';
 import { AvailableProduct } from './data/availableProducts';
-import { Package } from 'lucide-react';
 
 // Lazy load heavy components
 const CheckoutForm = lazy(() => import('./components/CheckoutForm'));
@@ -24,10 +21,10 @@ const ContactPage = lazy(() => import('./components/ContactPage'));
 
 // Loading component
 const LoadingSpinner = () => (
-  <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
-    <div className="bg-gray-900/95 rounded-xl p-4 md:p-6 text-center border border-red-500/30 mx-4">
-      <div className="animate-spin rounded-full h-8 w-8 md:h-12 md:w-12 border-b-2 md:border-b-4 border-red-500 mx-auto mb-2 md:mb-4"></div>
-      <p className="text-white text-sm md:text-lg font-bold">جارٍ التحميل...</p>
+  <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center">
+    <div className="bg-gray-900/95 rounded-lg p-4 text-center border border-red-500/30 mx-4">
+      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-500 mx-auto mb-2"></div>
+      <p className="text-white text-sm font-bold">جارٍ التحميل...</p>
     </div>
   </div>
 );
@@ -55,7 +52,6 @@ function App() {
   const [selectedAvailableProduct, setSelectedAvailableProduct] = useState<AvailableProduct | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [showScrollTop, setShowScrollTop] = useState(false);
   const [activeTab, setActiveTab] = useState<'home' | 'available' | 'external' | 'request'>('home');
   const [notification, setNotification] = useState({
     message: '',
@@ -66,16 +62,6 @@ function App() {
   const productsRef = useRef<HTMLDivElement>(null);
   const homeRef = useRef<HTMLDivElement>(null);
   
-  // Handle scroll to show/hide scroll to top button
-  useEffect(() => {
-    const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 500);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   const { submitOrder, requestProduct, loading } = useGoogleSheets();
 
   const scrollToProducts = () => {
@@ -99,19 +85,19 @@ function App() {
     }, 100);
   };
 
-  const showNotification = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+  const showNotification = useCallback((message: string, type: 'success' | 'error' | 'info' = 'success') => {
     setNotification({
       message,
       type,
       isVisible: true
     });
-  };
+  }, []);
 
-  const hideNotification = () => {
+  const hideNotification = useCallback(() => {
     setNotification(prev => ({ ...prev, isVisible: false }));
-  };
+  }, []);
 
-  const addToCart = (product: Product | AvailableProduct, quantity: number = 1) => {
+  const addToCart = useCallback((product: Product | AvailableProduct, quantity: number = 1) => {
     setCartItems(prev => {
       const existingItem = prev.find(item => item.id === product.id);
       if (existingItem) {
@@ -128,9 +114,9 @@ function App() {
       }];
     });
     showNotification(`تم إضافة ${quantity} من ${product.nameAr} إلى السلة`, 'success');
-  };
+  }, [showNotification]);
 
-  const updateQuantity = (id: string, quantity: number) => {
+  const updateQuantity = useCallback((id: string, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(id);
       return;
@@ -140,14 +126,14 @@ function App() {
         item.id === id ? { ...item, quantity } : item
       )
     );
-  };
+  }, []);
 
-  const removeFromCart = (id: string) => {
+  const removeFromCart = useCallback((id: string) => {
     setCartItems(prev => prev.filter(item => item.id !== id));
     showNotification('تم حذف المنتج من السلة', 'info');
-  };
+  }, [showNotification]);
 
-  const handleSearch = (query: string) => {
+  const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
     setSelectedCategory(undefined);
     
@@ -157,9 +143,9 @@ function App() {
     }
     
     showNotification(`جارٍ البحث عن: ${query}`, 'info');
-  };
+  }, [showNotification]);
 
-  const handleCategorySelect = (category: string) => {
+  const handleCategorySelect = useCallback((category: string) => {
     setSelectedCategory(category);
     setSearchQuery('');
     
@@ -169,24 +155,24 @@ function App() {
     }
     
     showNotification(`تم اختيار فئة: ${category}`, 'info');
-  };
+  }, [showNotification]);
 
-  const handleProductClick = (product: Product) => {
+  const handleProductClick = useCallback((product: Product) => {
     setSelectedProduct(product);
     setIsProductModalOpen(true);
-  };
+  }, []);
 
-  const handleAvailableProductClick = (product: AvailableProduct) => {
+  const handleAvailableProductClick = useCallback((product: AvailableProduct) => {
     setSelectedAvailableProduct(product);
     setIsAvailableProductModalOpen(true);
-  };
+  }, []);
 
-  const handleCheckout = () => {
+  const handleCheckout = useCallback(() => {
     setIsCartOpen(false);
     setIsCheckoutOpen(true);
-  };
+  }, []);
 
-  const handleOrderSubmit = async (orderData: any) => {
+  const handleOrderSubmit = useCallback(async (orderData: any) => {
     try {
       await submitOrder(orderData);
       setCartItems([]);
@@ -195,9 +181,9 @@ function App() {
     } catch (error) {
       showNotification('حدث خطأ أثناء إرسال الطلب. يرجى المحاولة مرة أخرى', 'error');
     }
-  };
+  }, [submitOrder, showNotification]);
 
-  const handleProductRequest = async (requestData: any) => {
+  const handleProductRequest = useCallback(async (requestData: any) => {
     try {
       await requestProduct(requestData);
       setIsProductRequestOpen(false);
@@ -205,9 +191,9 @@ function App() {
     } catch (error) {
       showNotification('حدث خطأ أثناء إرسال الطلب. يرجى المحاولة مرة أخرى', 'error');
     }
-  };
+  }, [requestProduct, showNotification]);
 
-  const handleTabChange = (tab: 'home' | 'available' | 'external' | 'request') => {
+  const handleTabChange = useCallback((tab: 'home' | 'available' | 'external' | 'request') => {
     setActiveTab(tab);
     setSelectedCategory(undefined);
     setSearchQuery('');
@@ -215,9 +201,9 @@ function App() {
     if (tab === 'request') {
       setIsProductRequestOpen(true);
     }
-  };
+  }, []);
 
-  const handleViewMore = (type: 'local' | 'external') => {
+  const handleViewMore = useCallback((type: 'local' | 'external') => {
     setActiveTab('available');
     // Smooth scroll to products section
     setTimeout(() => {
@@ -226,39 +212,24 @@ function App() {
         element.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }, 100);
-  };
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }, []);
 
   const cartTotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const cartTotalInDZD = cartItems.reduce((sum, item) => sum + item.priceInDZD * item.quantity, 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black relative overflow-hidden">
-      {/* Optimized Background Effects */}
-      <div className="fixed inset-0 z-0">
-        <div className="absolute top-20 left-20 w-96 h-96 bg-red-500/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-red-600/8 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-red-500/5 to-transparent rounded-full blur-3xl animate-spin" style={{ animationDuration: '60s' }} />
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black">
+      {/* Simplified Background */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-20 left-20 w-64 h-64 bg-red-500/5 rounded-full blur-2xl" />
+        <div className="absolute bottom-20 right-20 w-64 h-64 bg-red-600/5 rounded-full blur-2xl" />
       </div>
 
-      <FloatingParticles />
-
-      <Header
+      <LightweightHeader
         cartCount={cartItems.reduce((sum, item) => sum + item.quantity, 0)}
         onSearch={handleSearch}
         onCartToggle={() => setIsCartOpen(!isCartOpen)}
-        onProductRequest={() => setIsProductRequestOpen(true)}
         onContactOpen={() => setIsContactOpen(true)}
-        onProductClick={(product) => {
-          if ('quantity' in product) {
-            handleAvailableProductClick(product as AvailableProduct);
-          } else {
-            handleProductClick(product as Product);
-          }
-        }}
         onLogoClick={scrollToHome}
       />
 
@@ -271,17 +242,14 @@ function App() {
         <div ref={homeRef}>
           <div ref={productsRef}>
             {activeTab === 'home' && (
-              <HomePage
+              <LightweightHomePage
                 onCategorySelect={handleCategorySelect}
-                onProductClick={handleProductClick}
-                onAvailableProductClick={handleAvailableProductClick}
-                onAddToCart={addToCart}
                 onViewMore={handleViewMore}
               />
             )}
             
             {(activeTab === 'available' || activeTab === 'external') && (
-              <UnifiedProductsPage
+              <OptimizedUnifiedProductsPage
                 onAddToCart={addToCart}
                 onProductClick={handleProductClick}
                 onAvailableProductClick={handleAvailableProductClick}
@@ -369,9 +337,6 @@ function App() {
 
       {/* Floating Product Request Button */}
       <FloatingProductRequestButton onProductRequest={() => setIsProductRequestOpen(true)} />
-
-      {/* Cache Manager */}
-      <CacheManager />
     </div>
   );
 }
