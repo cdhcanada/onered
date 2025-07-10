@@ -316,6 +316,19 @@ textarea:focus-visible {
   }
 }
 
+/* Platform-specific colors */
+.platform-aliexpress {
+  background: linear-gradient(45deg, #ff6b35, #f7931e);
+}
+
+.platform-temu {
+  background: linear-gradient(45deg, #ff4757, #ff6b35);
+}
+
+.platform-shein {
+  background: linear-gradient(45deg, #ff3838, #ff6b9d);
+}
+
 /* Loading spinner optimization */
 .spinner {
   border: 2px solid rgba(255, 255, 255, 0.1);

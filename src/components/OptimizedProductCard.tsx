@@ -78,6 +78,26 @@ const OptimizedProductCard = memo(({
     ));
   }, []);
 
+  // Get platform name in Arabic
+  const getPlatformName = (platform: string) => {
+    switch (platform) {
+      case 'aliexpress': return 'علي إكسبريس';
+      case 'temu': return 'تيمو';
+      case 'shein': return 'شين';
+      default: return platform;
+    }
+  };
+
+  // Get platform color
+  const getPlatformColor = (platform: string) => {
+    switch (platform) {
+      case 'aliexpress': return 'from-red-500 to-red-600';
+      case 'temu': return 'from-orange-500 to-orange-600';
+      case 'shein': return 'from-pink-500 to-pink-600';
+      default: return 'from-gray-500 to-gray-600';
+    }
+  };
+
   // Create optimized image URL with quality and format parameters
   const getOptimizedImageUrl = (url: string) => {
     if (url.includes('via.placeholder.com')) return url;
@@ -137,7 +157,7 @@ const OptimizedProductCard = memo(({
         <div className={`absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-bold text-white backdrop-blur-sm transition-all duration-300 ${
           isLocal 
             ? 'bg-green-500/90 group-hover:bg-green-400/90' 
-            : 'bg-red-500/90 group-hover:bg-red-400/90'
+            : `bg-gradient-to-r ${getPlatformColor(product.platform)} group-hover:scale-105`
         }`}>
           {isLocal ? (
             <div className="flex items-center space-x-1">
@@ -147,7 +167,7 @@ const OptimizedProductCard = memo(({
           ) : (
             <div className="flex items-center space-x-1">
               <ExternalLink className="w-3 h-3" />
-              <span>للطلب</span>
+              <span>{getPlatformName(product.platform)}</span>
             </div>
           )}
         </div>
@@ -209,6 +229,20 @@ const OptimizedProductCard = memo(({
               <span>الكمية: {product.quantity}</span>
             </div>
             <div>{product.deliveryTime}</div>
+          </div>
+        )}
+        
+        {/* External Product Info */}
+        {!isLocal && (
+          <div className="text-xs text-gray-400 space-y-1">
+            <div className="flex items-center space-x-1">
+              <ExternalLink className="w-3 h-3" />
+              <span>المنصة: {getPlatformName(product.platform)}</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <Package className="w-3 h-3" />
+              <span>{product.deliveryTime}</span>
+            </div>
           </div>
         )}
         
